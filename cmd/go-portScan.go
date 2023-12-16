@@ -3,14 +3,6 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
-	"github.com/XinRoom/go-portScan/core/host"
-	"github.com/XinRoom/go-portScan/core/port"
-	"github.com/XinRoom/go-portScan/core/port/syn"
-	"github.com/XinRoom/go-portScan/core/port/tcp"
-	"github.com/XinRoom/go-portScan/util"
-	"github.com/XinRoom/iprange"
-	"github.com/panjf2000/ants/v2"
-	"github.com/urfave/cli/v2"
 	"math/rand"
 	"net"
 	"os"
@@ -20,6 +12,15 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/XinRoom/go-portScan/core/host"
+	"github.com/XinRoom/go-portScan/core/port"
+	"github.com/XinRoom/go-portScan/core/port/syn"
+	"github.com/XinRoom/go-portScan/core/port/tcp"
+	"github.com/XinRoom/go-portScan/util"
+	"github.com/XinRoom/iprange"
+	"github.com/panjf2000/ants/v2"
+	"github.com/urfave/cli/v2"
 )
 
 var (
@@ -78,7 +79,7 @@ func run(c *cli.Context) error {
 		if r, err := syn.GetAllDevs(); err != nil {
 			myLog.Fatal(err.Error())
 		} else {
-			myLog.Print(r)
+			myLog.Printf(r)
 		}
 		os.Exit(0)
 	}
@@ -195,7 +196,7 @@ func run(c *cli.Context) error {
 				}
 				ipPortNumRW.Unlock()
 			}
-			myLog.Println(ret.String())
+			myLog.Printf("%s", ret.String())
 			if csvWrite != nil {
 				line := []string{ret.Ip.String(), strconv.Itoa(int(ret.Port)), ret.Service, "", "", "", "", ""}
 				if ret.HttpInfo != nil {
@@ -253,6 +254,12 @@ func run(c *cli.Context) error {
 	portScan := func(ip net.IP) {
 		var ipPortNum int
 		var ipPortNumOk bool
+
+		// first look host name
+		hostNameArray, _ := net.LookupAddr(ip.String())
+		hostNameStr := strings.Join(hostNameArray[:], " ")
+		myLog.Printf("%s %s\n", ip.String(), hostNameStr)
+
 		if maxOpenPort > 0 {
 			ipPortNumRW.Lock()
 			ipPortNumMap[ip.String()] = 0
